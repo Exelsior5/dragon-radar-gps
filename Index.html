@@ -9,14 +9,13 @@
 <body>
   <div class="container">
     <h1>Dragon Radar GPS</h1>
-    <form id="destination-form">
-      <label for="latitude">Latitude :</label>
-      <input type="number" step="any" id="latitude" required />
-      <label for="longitude">Longitude :</label>
-      <input type="number" step="any" id="longitude" required />
-      <button type="submit">Définir la destination</button>
-    </form>
+    <button id="scan-button">📡 Scanner le radar</button>
+    <div id="code-form" style="display: none; margin-top: 10px;">
+      <input type="text" id="destination-code" placeholder="Entrer un code" />
+      <button id="set-destination">Valider</button>
+    </div>
     <canvas id="radar" width="300" height="300"></canvas>
+    <p id="distance" style="margin-top: 15px; font-size: 1.2em;"></p>
   </div>
   <script src="script.js"></script>
 </body>
