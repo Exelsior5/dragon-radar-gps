@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dragon Radar GPS</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h1>Dragon Radar GPS</h1>
     <button id="scan-button">📡 Scanner le radar</button>
-    
     <div id="code-form" style="display: none; margin-top: 10px;">
       <input type="text" id="destination-code" placeholder="Entrer un code" />
       <button id="set-destination">Valider</button>
     </div>
-
     <canvas id="radar" width="300" height="300"></canvas>
     <p id="distance" style="margin-top: 15px; font-size: 1.2em;"></p>
   </div>
