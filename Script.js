@@ -23,7 +23,8 @@ const centerY = canvas.height / 2;
 
 const codeToAddress = {
   'test': "École maternelle publique Louise Michel, 21 Rue de la Concorde, 94400 Vitry-sur-Seine, France",
-  'test2': "50 rue Champollion, 94400 Vitry-sur-Seine, France"
+  'test2': "50 rue Champollion, 94400 Vitry-sur-Seine, France",
+  'test3': "11 rue Saint Paul, 75004 Paris, France"
 };
 
 function drawTriangle() {
