@@ -14,6 +14,8 @@ let positionHistory = [];
 const maxHistory = 5;
 let previousPosition = null;
 let currentHeading = 0;
+let headingHistory = [];
+const maxHeadingHistory = 5;
 
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
@@ -91,7 +93,10 @@ function handlePosition(position) {
   if (previousPosition) {
     const jump = calculateDistance(latitude, longitude, previousPosition.latitude, previousPosition.longitude);
     if (jump < 100) {
-      currentHeading = computeHeading(previousPosition, newPos);
+      const rawHeading = computeHeading(previousPosition, newPos);
+      headingHistory.push(rawHeading);
+      if (headingHistory.length > maxHeadingHistory) headingHistory.shift();
+      currentHeading = headingHistory.reduce((sum, h) => sum + h, 0) / headingHistory.length;
     }
   }
   previousPosition = newPos;
