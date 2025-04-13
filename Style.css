@@ -12,6 +12,7 @@ body {
 
 .container {
   text-align: center;
+  max-width: 90vw;
 }
 
 canvas {
@@ -41,4 +42,9 @@ button {
 
 button:hover {
   background-color: #00cc00;
+}
+
+#distance {
+  color: #ffffff;
+  font-weight: bold;
 }
