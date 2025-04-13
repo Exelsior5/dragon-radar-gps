@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dragon Radar GPS</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    #radar {
+      transform-origin: center center;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -17,6 +22,41 @@
     <canvas id="radar" width="300" height="300"></canvas>
     <p id="distance" style="margin-top: 15px; font-size: 1.2em;"></p>
   </div>
+
+  <script>
+let previousPosition = null;
+let currentRotation = 0;
+
+function computeHeading(from, to) {
+  const dy = to.latitude - from.latitude;
+  const dx = (to.longitude - from.longitude) * Math.cos((from.latitude + to.latitude) / 2 * Math.PI / 180);
+  let heading = Math.atan2(dx, dy) * 180 / Math.PI;
+  return (heading + 360) % 360;
+}
+
+function updateRotation(newPosition) {
+  if (!previousPosition) {
+    previousPosition = newPosition;
+    return;
+  }
+  const heading = computeHeading(previousPosition, newPosition);
+  const canvas = document.getElementById("radar");
+  canvas.style.transform = `rotate(${-heading}deg)`;
+  previousPosition = newPosition;
+}
+
+navigator.geolocation.watchPosition(pos => {
+  updateRotation({
+    latitude: pos.coords.latitude,
+    longitude: pos.coords.longitude
+  });
+}, console.error, {
+  enableHighAccuracy: true,
+  maximumAge: 1000,
+  timeout: 5000
+});
+</script>
+
   <script src="script.js"></script>
 </body>
 </html>
