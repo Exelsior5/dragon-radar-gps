@@ -12,17 +12,17 @@ let dotY = canvas.height / 2;
 let shouldDrawDot = true;
 let positionHistory = [];
 const maxHistory = 5;
+let previousPosition = null;
+let currentHeading = 0;
 
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 
-// Codes secrets associés aux adresses
 const codeToAddress = {
   'test': "École maternelle publique Louise Michel, 21 Rue de la Concorde, 94400 Vitry-sur-Seine, France",
   'test2': "50 rue Champollion, 94400 Vitry-sur-Seine, France"
 };
 
-// Triangle rouge (utilisateur)
 function drawTriangle() {
   const size = 10;
   ctx.fillStyle = 'red';
@@ -34,15 +34,19 @@ function drawTriangle() {
   ctx.fill();
 }
 
-// Point jaune (destination)
-function drawDot(x, y) {
+function drawRotatedDot(x, y, angle) {
+  const dx = x - centerX;
+  const dy = y - centerY;
+  const rad = angle * Math.PI / 180;
+  const rotatedX = dx * Math.cos(rad) - dy * Math.sin(rad);
+  const rotatedY = dx * Math.sin(rad) + dy * Math.cos(rad);
+
   ctx.beginPath();
-  ctx.arc(x, y, 5, 0, Math.PI * 2);
+  ctx.arc(centerX + rotatedX, centerY + rotatedY, 5, 0, Math.PI * 2);
   ctx.fillStyle = 'yellow';
   ctx.fill();
 }
 
-// Distance en mètres entre deux coordonnées GPS
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
   const φ1 = lat1 * Math.PI / 180;
@@ -50,20 +54,15 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const Δφ = (lat2 - lat1) * Math.PI / 180;
   const Δλ = (lon2 - lon1) * Math.PI / 180;
 
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return Math.round(R * c); // en mètres
+  return Math.round(R * c);
 }
 
-// Clignotement du point jaune
 setInterval(() => {
   shouldDrawDot = !shouldDrawDot;
 }, 500);
 
-// Moyenne glissante des positions
 function smoothPosition(position) {
   positionHistory.push(position);
   if (positionHistory.length > maxHistory) {
@@ -74,23 +73,30 @@ function smoothPosition(position) {
   return { latitude: avgLat, longitude: avgLon };
 }
 
-// Suivi GPS avec filtre de qualité
+function computeHeading(from, to) {
+  const y = Math.sin(to.longitude - from.longitude) * Math.cos(to.latitude);
+  const x = Math.cos(from.latitude) * Math.sin(to.latitude) -
+            Math.sin(from.latitude) * Math.cos(to.latitude) * Math.cos(to.longitude - from.longitude);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
 function handlePosition(position) {
   if (!destination) return;
 
   const { latitude, longitude, accuracy } = position.coords;
-
-  // Ignorer les signaux trop flous
   if (accuracy > 30) return;
 
-  // Rejeter les sauts brutaux
-  if (positionHistory.length > 0) {
-    const last = positionHistory[positionHistory.length - 1];
-    const jump = calculateDistance(latitude, longitude, last.latitude, last.longitude);
-    if (jump > 50) return;
-  }
+  const newPos = { latitude, longitude };
 
-  const smoothed = smoothPosition({ latitude, longitude });
+  if (previousPosition) {
+    const jump = calculateDistance(latitude, longitude, previousPosition.latitude, previousPosition.longitude);
+    if (jump < 100) {
+      currentHeading = computeHeading(previousPosition, newPos);
+    }
+  }
+  previousPosition = newPos;
+
+  const smoothed = smoothPosition(newPos);
   const lat1 = smoothed.latitude;
   const lon1 = smoothed.longitude;
   const lat2 = destination.latitude;
@@ -117,22 +123,19 @@ function handlePosition(position) {
   distanceDisplay.textContent = `Distance restante : ${distance} m`;
 }
 
-// Animation du radar
 function animateRadar() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawTriangle();
   if (destination && shouldDrawDot) {
-    drawDot(dotX, dotY);
+    drawRotatedDot(dotX, dotY, currentHeading);
   }
   requestAnimationFrame(animateRadar);
 }
 
-// Gestion du bouton “Scanner le radar”
 scanButton.addEventListener('click', () => {
   codeForm.style.display = 'block';
 });
 
-// Validation du code
 validateButton.addEventListener('click', () => {
   const code = codeInput.value.trim().toLowerCase();
   const address = codeToAddress[code];
@@ -157,7 +160,6 @@ validateButton.addEventListener('click', () => {
     });
 });
 
-// Démarrage du suivi GPS
 navigator.geolocation.watchPosition(handlePosition, console.error, {
   enableHighAccuracy: true,
   maximumAge: 1000,
