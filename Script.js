@@ -6,6 +6,11 @@ let destination = null;
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 
+let dotX = centerX;
+let dotY = centerY;
+let shouldDrawDot = true;
+
+// Fonction pour dessiner le triangle rouge (ton emplacement)
 function drawTriangle() {
   const size = 10;
   ctx.fillStyle = 'red';
@@ -17,6 +22,7 @@ function drawTriangle() {
   ctx.fill();
 }
 
+// Fonction pour dessiner le point jaune
 function drawDot(x, y) {
   ctx.beginPath();
   ctx.arc(x, y, 5, 0, Math.PI * 2);
@@ -24,6 +30,12 @@ function drawDot(x, y) {
   ctx.fill();
 }
 
+// Clignotement toutes les 500ms
+setInterval(() => {
+  shouldDrawDot = !shouldDrawDot;
+}, 500);
+
+// Met à jour la position toutes les secondes
 function updatePosition() {
   if (!destination) return;
 
@@ -31,13 +43,12 @@ function updatePosition() {
     const { latitude: lat1, longitude: lon1 } = position.coords;
     const { latitude: lat2, longitude: lon2 } = destination;
 
-    const dx = (lon2 - lon1) * 100000; // Rough conversion for longitude
-    const dy = (lat2 - lat1) * -100000; // Negative to invert Y axis
+    const dx = (lon2 - lon1) * 100000;
+    const dy = (lat2 - lat1) * -100000;
 
     let x = centerX + dx;
     let y = centerY + dy;
 
-    // Clamp within radar
     const maxRadius = canvas.width / 2 - 10;
     const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
     if (dist > maxRadius) {
@@ -46,12 +57,23 @@ function updatePosition() {
       y = centerY + Math.sin(angle) * maxRadius;
     }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawTriangle();
-    if (Date.now() % 1000 < 500) drawDot(x, y); // Blink every 500ms
+    // Sauvegarde les coordonnées pour les utiliser pendant le clignotement
+    dotX = x;
+    dotY = y;
   });
 }
 
+// Animation continue du radar
+function animateRadar() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawTriangle();
+  if (destination && shouldDrawDot) {
+    drawDot(dotX, dotY);
+  }
+  requestAnimationFrame(animateRadar);
+}
+
+// Gestion du formulaire
 form.addEventListener('submit', e => {
   e.preventDefault();
   const lat = parseFloat(document.getElementById('latitude').value);
@@ -59,5 +81,6 @@ form.addEventListener('submit', e => {
   destination = { latitude: lat, longitude: lon };
 });
 
-drawTriangle();
+// Lancer les mises à jour GPS + animation
 setInterval(updatePosition, 1000);
+animateRadar();
