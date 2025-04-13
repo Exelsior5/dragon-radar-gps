@@ -10,6 +10,8 @@ let destination = null;
 let dotX = canvas.width / 2;
 let dotY = canvas.height / 2;
 let shouldDrawDot = true;
+let positionHistory = [];
+const maxHistory = 5;
 
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
@@ -56,33 +58,44 @@ setInterval(() => {
   shouldDrawDot = !shouldDrawDot;
 }, 500);
 
-function updatePosition() {
+function smoothPosition(position) {
+  positionHistory.push(position);
+  if (positionHistory.length > maxHistory) {
+    positionHistory.shift();
+  }
+  const avgLat = positionHistory.reduce((sum, p) => sum + p.latitude, 0) / positionHistory.length;
+  const avgLon = positionHistory.reduce((sum, p) => sum + p.longitude, 0) / positionHistory.length;
+  return { latitude: avgLat, longitude: avgLon };
+}
+
+function handlePosition(position) {
   if (!destination) return;
 
-  navigator.geolocation.getCurrentPosition(position => {
-    const { latitude: lat1, longitude: lon1 } = position.coords;
-    const { latitude: lat2, longitude: lon2 } = destination;
+  const smoothed = smoothPosition(position.coords);
+  const lat1 = smoothed.latitude;
+  const lon1 = smoothed.longitude;
+  const lat2 = destination.latitude;
+  const lon2 = destination.longitude;
 
-    const dx = (lon2 - lon1) * 100000;
-    const dy = (lat2 - lat1) * -100000;
+  const dx = (lon2 - lon1) * 100000;
+  const dy = (lat2 - lat1) * -100000;
 
-    let x = centerX + dx;
-    let y = centerY + dy;
+  let x = centerX + dx;
+  let y = centerY + dy;
 
-    const maxRadius = canvas.width / 2 - 10;
-    const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
-    if (dist > maxRadius) {
-      const angle = Math.atan2(y - centerY, x - centerX);
-      x = centerX + Math.cos(angle) * maxRadius;
-      y = centerY + Math.sin(angle) * maxRadius;
-    }
+  const maxRadius = canvas.width / 2 - 10;
+  const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+  if (dist > maxRadius) {
+    const angle = Math.atan2(y - centerY, x - centerX);
+    x = centerX + Math.cos(angle) * maxRadius;
+    y = centerY + Math.sin(angle) * maxRadius;
+  }
 
-    dotX = x;
-    dotY = y;
+  dotX = x;
+  dotY = y;
 
-    const distance = calculateDistance(lat1, lon1, lat2, lon2);
-    distanceDisplay.textContent = `Distance restante : ${distance} m`;
-  });
+  const distance = calculateDistance(lat1, lon1, lat2, lon2);
+  distanceDisplay.textContent = `Distance restante : ${distance} m`;
 }
 
 function animateRadar() {
@@ -122,5 +135,10 @@ validateButton.addEventListener('click', () => {
     });
 });
 
-setInterval(updatePosition, 1000);
+navigator.geolocation.watchPosition(handlePosition, console.error, {
+  enableHighAccuracy: true,
+  maximumAge: 1000,
+  timeout: 5000
+});
+
 animateRadar();
