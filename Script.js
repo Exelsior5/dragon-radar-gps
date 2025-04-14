@@ -82,7 +82,7 @@ function handlePosition(position) {
   if (moved >= 10) {
     const avgLat = (current.latitude + referencePosition.latitude) / 2 * Math.PI / 180;
     const moveVector = {
-      x: -(current.longitude - referencePosition.longitude) * Math.cos(avgLat),
+      x: (current.longitude - referencePosition.longitude) * Math.cos(avgLat),
       y: current.latitude - referencePosition.latitude
     };
 
