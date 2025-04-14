@@ -113,7 +113,7 @@ function handlePosition(position) {
   }
 
   currentDistance = calculateDistance(current.latitude, current.longitude, destination.latitude, destination.longitude);
-  distanceDisplay.textContent = `Distance restante : ${distance} m`;
+  distanceDisplay.textContent = `Distance restante : ${currentDistance} m`;
 }
 
 function animateRadar() {
