@@ -69,7 +69,6 @@ function drawDotAtRelativeAngle(angle) {
   ctx.fillStyle = 'yellow';
   ctx.fill();
 }
-}
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
