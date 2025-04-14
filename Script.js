@@ -12,6 +12,7 @@ let shouldDrawDot = true;
 let currentDistance = 0;
 let referencePosition = null;
 let lastMovementVector = null;
+let positionHistory = [];
 
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
@@ -35,29 +36,17 @@ function drawTriangle() {
 
 function drawDotAtRelativeAngle(angle) {
   let radiusFactor = 1;
-  if (currentDistance >= 500) {
-    radiusFactor = 1;
-  } else if (currentDistance >= 400) {
-    radiusFactor = 0.9;
-  } else if (currentDistance >= 300) {
-    radiusFactor = 0.8;
-  } else if (currentDistance >= 200) {
-    radiusFactor = 0.7;
-  } else if (currentDistance >= 100) {
-    radiusFactor = 0.6;
-  } else if (currentDistance >= 80) {
-    radiusFactor = 0.5;
-  } else if (currentDistance >= 60) {
-    radiusFactor = 0.4;
-  } else if (currentDistance >= 40) {
-    radiusFactor = 0.3;
-  } else if (currentDistance >= 20) {
-    radiusFactor = 0.2;
-  } else if (currentDistance > 7) {
-    radiusFactor = 0.1;
-  } else {
-    radiusFactor = 0;
-  }
+  if (currentDistance >= 500) radiusFactor = 1;
+  else if (currentDistance >= 400) radiusFactor = 0.9;
+  else if (currentDistance >= 300) radiusFactor = 0.8;
+  else if (currentDistance >= 200) radiusFactor = 0.7;
+  else if (currentDistance >= 100) radiusFactor = 0.6;
+  else if (currentDistance >= 80) radiusFactor = 0.5;
+  else if (currentDistance >= 60) radiusFactor = 0.4;
+  else if (currentDistance >= 40) radiusFactor = 0.3;
+  else if (currentDistance >= 20) radiusFactor = 0.2;
+  else if (currentDistance > 7) radiusFactor = 0.1;
+  else radiusFactor = 0;
 
   const radius = (canvas.width / 2 - 20) * radiusFactor;
   const rad = (angle - 90) * Math.PI / 180;
@@ -95,9 +84,17 @@ function handlePosition(position) {
   if (!destination) return;
 
   const { latitude, longitude, accuracy } = position.coords;
-  if (accuracy > 30) return;
+  if (accuracy > 50) return;
 
-  const current = { latitude, longitude };
+  distanceDisplay.textContent = `Distance restante : ${currentDistance} m — Précision GPS : ${Math.round(accuracy)} m`;
+
+  positionHistory.push({ latitude, longitude });
+  if (positionHistory.length > 3) positionHistory.shift();
+
+  const avgLat = positionHistory.reduce((sum, p) => sum + p.latitude, 0) / positionHistory.length;
+  const avgLon = positionHistory.reduce((sum, p) => sum + p.longitude, 0) / positionHistory.length;
+
+  const current = { latitude: avgLat, longitude: avgLon };
 
   if (!referencePosition) {
     referencePosition = current;
@@ -105,10 +102,10 @@ function handlePosition(position) {
   }
 
   const moved = calculateDistance(referencePosition.latitude, referencePosition.longitude, current.latitude, current.longitude);
-  if (moved >= 10) {
-    const avgLat = (current.latitude + referencePosition.latitude) / 2 * Math.PI / 180;
+  if (moved >= 10 && accuracy <= 20) {
+    const avgLatMid = (current.latitude + referencePosition.latitude) / 2 * Math.PI / 180;
     const moveVector = {
-      x: (current.longitude - referencePosition.longitude) * Math.cos(avgLat),
+      x: (current.longitude - referencePosition.longitude) * Math.cos(avgLatMid),
       y: current.latitude - referencePosition.latitude
     };
 
@@ -123,7 +120,6 @@ function handlePosition(position) {
   }
 
   currentDistance = calculateDistance(current.latitude, current.longitude, destination.latitude, destination.longitude);
-  distanceDisplay.textContent = `Distance restante : ${currentDistance} m`;
 }
 
 function animateRadar() {
@@ -166,8 +162,8 @@ validateButton.addEventListener('click', () => {
 
 navigator.geolocation.watchPosition(handlePosition, console.error, {
   enableHighAccuracy: true,
-  maximumAge: 1000,
-  timeout: 5000
+  maximumAge: 0,
+  timeout: 10000
 });
 
 setInterval(() => {
