@@ -78,13 +78,15 @@ function handlePosition(position) {
 
   const moved = calculateDistance(referencePosition.latitude, referencePosition.longitude, current.latitude, current.longitude);
   if (moved >= 10) {
+    const avgLat = (current.latitude + referencePosition.latitude) / 2 * Math.PI / 180;
     const moveVector = {
-      x: current.longitude - referencePosition.longitude,
+      x: (current.longitude - referencePosition.longitude) * Math.cos(avgLat),
       y: current.latitude - referencePosition.latitude
     };
 
+    const avgLat2 = (current.latitude + destination.latitude) / 2 * Math.PI / 180;
     const directionVector = {
-      x: destination.longitude - current.longitude,
+      x: (destination.longitude - current.longitude) * Math.cos(avgLat2),
       y: destination.latitude - current.latitude
     };
 
