@@ -35,9 +35,40 @@ function drawTriangle() {
 
 function drawDotAtRelativeAngle(angle) {
   let radiusFactor = 1;
-  if (currentDistance >= 1000) {
+  if (currentDistance >= 500) {
     radiusFactor = 1;
-  } else if (currentDistance >= 500) {
+  } else if (currentDistance >= 400) {
+    radiusFactor = 0.9;
+  } else if (currentDistance >= 300) {
+    radiusFactor = 0.8;
+  } else if (currentDistance >= 200) {
+    radiusFactor = 0.7;
+  } else if (currentDistance >= 100) {
+    radiusFactor = 0.6;
+  } else if (currentDistance >= 80) {
+    radiusFactor = 0.5;
+  } else if (currentDistance >= 60) {
+    radiusFactor = 0.4;
+  } else if (currentDistance >= 40) {
+    radiusFactor = 0.3;
+  } else if (currentDistance >= 20) {
+    radiusFactor = 0.2;
+  } else if (currentDistance > 7) {
+    radiusFactor = 0.1;
+  } else {
+    radiusFactor = 0;
+  }
+
+  const radius = (canvas.width / 2 - 20) * radiusFactor;
+  const rad = (angle - 90) * Math.PI / 180; // Correction : 0° en haut
+  const x = centerX + radius * Math.cos(rad);
+  const y = centerY + radius * Math.sin(rad);
+
+  ctx.beginPath();
+  ctx.arc(x, y, 5, 0, Math.PI * 2);
+  ctx.fillStyle = 'yellow';
+  ctx.fill();
+} else if (currentDistance >= 500) {
     radiusFactor = 0.75;
   } else if (currentDistance >= 250) {
     radiusFactor = 0.5;
