@@ -7,9 +7,10 @@ const validateButton = document.getElementById('set-destination');
 const distanceDisplay = document.getElementById('distance');
 
 let destination = null;
-let dotAngle = 0;
+let dotRelativeAngle = 0;
 let shouldDrawDot = true;
 let referencePosition = null;
+let lastMovementVector = null;
 
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
@@ -31,7 +32,7 @@ function drawTriangle() {
   ctx.fill();
 }
 
-function drawRotatedDot(angle) {
+function drawDotAtRelativeAngle(angle) {
   const radius = canvas.width / 2 - 20;
   const rad = angle * Math.PI / 180;
   const x = centerX + radius * Math.cos(rad);
@@ -55,15 +56,11 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return Math.round(R * c);
 }
 
-function computeAngle(from, to) {
-  const φ1 = from.latitude * Math.PI / 180;
-  const φ2 = to.latitude * Math.PI / 180;
-  const Δλ = (to.longitude - from.longitude) * Math.PI / 180;
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x = Math.cos(φ1) * Math.sin(φ2) -
-            Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-  const θ = Math.atan2(y, x);
-  return (θ * 180 / Math.PI + 360) % 360;
+function angleBetweenVectors(v1, v2) {
+  const dot = v1.x * v2.x + v1.y * v2.y;
+  const det = v1.x * v2.y - v1.y * v2.x;
+  const angle = Math.atan2(det, dot) * 180 / Math.PI;
+  return (angle + 360) % 360;
 }
 
 function handlePosition(position) {
@@ -76,12 +73,23 @@ function handlePosition(position) {
 
   if (!referencePosition) {
     referencePosition = current;
-  } else {
-    const moved = calculateDistance(referencePosition.latitude, referencePosition.longitude, current.latitude, current.longitude);
-    if (moved >= 10) {
-      dotAngle = computeAngle(current, destination);
-      referencePosition = current;
-    }
+    return;
+  }
+
+  const moved = calculateDistance(referencePosition.latitude, referencePosition.longitude, current.latitude, current.longitude);
+  if (moved >= 10) {
+    const moveVector = {
+      x: current.longitude - referencePosition.longitude,
+      y: current.latitude - referencePosition.latitude
+    };
+
+    const directionVector = {
+      x: destination.longitude - current.longitude,
+      y: destination.latitude - current.latitude
+    };
+
+    dotRelativeAngle = angleBetweenVectors(moveVector, directionVector);
+    referencePosition = current;
   }
 
   const distance = calculateDistance(current.latitude, current.longitude, destination.latitude, destination.longitude);
@@ -92,7 +100,7 @@ function animateRadar() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawTriangle();
   if (destination && shouldDrawDot) {
-    drawRotatedDot(dotAngle);
+    drawDotAtRelativeAngle(dotRelativeAngle);
   }
   requestAnimationFrame(animateRadar);
 }
@@ -118,7 +126,7 @@ validateButton.addEventListener('click', () => {
       }
       const [lon, lat] = data.features[0].geometry.coordinates;
       destination = { latitude: lat, longitude: lon };
-      referencePosition = null; // Reset point de référence au changement de destination
+      referencePosition = null;
     })
     .catch(err => {
       alert("Erreur lors de la récupération de l'adresse.");
