@@ -68,23 +68,7 @@ function drawDotAtRelativeAngle(angle) {
   ctx.arc(x, y, 5, 0, Math.PI * 2);
   ctx.fillStyle = 'yellow';
   ctx.fill();
-}else if (currentDistance >= 100) {
-    radiusFactor = 0.25;
-  } else if (currentDistance > 9) {
-    radiusFactor = 0.1;
-  } else {
-    radiusFactor = 0;
-  }
-
-  const radius = (canvas.width / 2 - 20) * radiusFactor;
-  const rad = (angle - 90) * Math.PI / 180; // Correction : 0° en haut
-  const x = centerX + radius * Math.cos(rad);
-  const y = centerY + radius * Math.sin(rad);
-
-  ctx.beginPath();
-  ctx.arc(x, y, 5, 0, Math.PI * 2);
-  ctx.fillStyle = 'yellow';
-  ctx.fill();
+}
 }
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
