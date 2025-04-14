@@ -88,7 +88,7 @@ function handlePosition(position) {
 
     const avgLat2 = (current.latitude + destination.latitude) / 2 * Math.PI / 180;
     const directionVector = {
-      x: (destination.longitude - current.longitude) * Math.cos(avgLat2),
+      x: -(destination.longitude - current.longitude) * Math.cos(avgLat2),
       y: destination.latitude - current.latitude
     };
 
