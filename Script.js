@@ -68,9 +68,7 @@ function drawDotAtRelativeAngle(angle) {
   ctx.arc(x, y, 5, 0, Math.PI * 2);
   ctx.fillStyle = 'yellow';
   ctx.fill();
-} else if (currentDistance >= 500) {
-    radiusFactor = 0.75;
-  } else if (currentDistance >= 250) {
+} else if (currentDistance >= 250) {
     radiusFactor = 0.5;
   } else if (currentDistance >= 100) {
     radiusFactor = 0.25;
