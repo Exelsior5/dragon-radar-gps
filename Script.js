@@ -34,7 +34,7 @@ function drawTriangle() {
 
 function drawDotAtRelativeAngle(angle) {
   const radius = canvas.width / 2 - 20;
-  const rad = angle * Math.PI / 180;
+  const rad = (angle - 90) * Math.PI / 180; // Correction : 0° en haut
   const x = centerX + radius * Math.cos(rad);
   const y = centerY + radius * Math.sin(rad);
 
