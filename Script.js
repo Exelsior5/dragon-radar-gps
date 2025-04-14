@@ -9,6 +9,7 @@ const distanceDisplay = document.getElementById('distance');
 let destination = null;
 let dotRelativeAngle = 0;
 let shouldDrawDot = true;
+let currentDistance = 0;
 let referencePosition = null;
 let lastMovementVector = null;
 
@@ -33,7 +34,22 @@ function drawTriangle() {
 }
 
 function drawDotAtRelativeAngle(angle) {
-  const radius = canvas.width / 2 - 20;
+  let radiusFactor = 1;
+  if (currentDistance >= 1000) {
+    radiusFactor = 1;
+  } else if (currentDistance >= 500) {
+    radiusFactor = 0.75;
+  } else if (currentDistance >= 250) {
+    radiusFactor = 0.5;
+  } else if (currentDistance >= 100) {
+    radiusFactor = 0.25;
+  } else if (currentDistance > 9) {
+    radiusFactor = 0.1;
+  } else {
+    radiusFactor = 0;
+  }
+
+  const radius = (canvas.width / 2 - 20) * radiusFactor;
   const rad = (angle - 90) * Math.PI / 180; // Correction : 0° en haut
   const x = centerX + radius * Math.cos(rad);
   const y = centerY + radius * Math.sin(rad);
@@ -96,7 +112,7 @@ function handlePosition(position) {
     referencePosition = current;
   }
 
-  const distance = calculateDistance(current.latitude, current.longitude, destination.latitude, destination.longitude);
+  currentDistance = calculateDistance(current.latitude, current.longitude, destination.latitude, destination.longitude);
   distanceDisplay.textContent = `Distance restante : ${distance} m`;
 }
 
