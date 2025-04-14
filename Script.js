@@ -57,9 +57,11 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 function angleBetweenVectors(v1, v2) {
-  const dot = v1.x * v2.x + v1.y * v2.y;
-  const det = v1.x * v2.y - v1.y * v2.x;
-  const angle = Math.atan2(det, dot) * 180 / Math.PI;
+  const norm1 = Math.sqrt(v1.x ** 2 + v1.y ** 2);
+  const norm2 = Math.sqrt(v2.x ** 2 + v2.y ** 2);
+  const dot = (v1.x * v2.x + v1.y * v2.y) / (norm1 * norm2);
+  const cross = (v1.x * v2.y - v1.y * v2.x) / (norm1 * norm2);
+  const angle = Math.atan2(cross, dot) * 180 / Math.PI;
   return (angle + 360) % 360;
 }
 
