@@ -85,8 +85,6 @@ function handlePosition(position) {
   const { latitude, longitude, accuracy } = position.coords;
   if (accuracy > 50) return;
 
-  distanceDisplay.textContent = `Distance restante : ${currentDistance} m — Précision GPS : ${Math.round(accuracy)} m`;
-
   positionHistory.push({ latitude, longitude });
   if (positionHistory.length > 3) positionHistory.shift();
 
@@ -103,14 +101,15 @@ function handlePosition(position) {
   const moved = calculateDistance(referencePosition.latitude, referencePosition.longitude, current.latitude, current.longitude);
   if (moved >= 10 && accuracy <= 20) {
     const avgLatMid = (current.latitude + referencePosition.latitude) / 2 * Math.PI / 180;
+
     const moveVector = {
-      x: (current.longitude - referencePosition.longitude) * Math.cos(avgLatMid),
+      x: -(current.longitude - referencePosition.longitude) * Math.cos(avgLatMid),  // ✅ Inversion ici
       y: current.latitude - referencePosition.latitude
     };
 
     const avgLat2 = (current.latitude + destination.latitude) / 2 * Math.PI / 180;
     const directionVector = {
-      x: (destination.longitude - current.longitude) * Math.cos(avgLat2), // ✅ correction ici
+      x: (destination.longitude - current.longitude) * Math.cos(avgLat2),
       y: destination.latitude - current.latitude
     };
 
@@ -119,6 +118,7 @@ function handlePosition(position) {
   }
 
   currentDistance = calculateDistance(current.latitude, current.longitude, destination.latitude, destination.longitude);
+  distanceDisplay.textContent = `Distance restante : ${currentDistance} m — Précision GPS : ${Math.round(accuracy)} m`;
 }
 
 function animateRadar() {
