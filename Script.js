@@ -11,7 +11,6 @@ let dotRelativeAngle = 0;
 let shouldDrawDot = true;
 let currentDistance = 0;
 let referencePosition = null;
-let lastMovementVector = null;
 let positionHistory = [];
 
 const centerX = canvas.width / 2;
@@ -111,7 +110,7 @@ function handlePosition(position) {
 
     const avgLat2 = (current.latitude + destination.latitude) / 2 * Math.PI / 180;
     const directionVector = {
-      x: -(destination.longitude - current.longitude) * Math.cos(avgLat2),
+      x: (destination.longitude - current.longitude) * Math.cos(avgLat2), // ✅ correction ici
       y: destination.latitude - current.latitude
     };
 
