@@ -11,7 +11,7 @@ let dotRelativeAngle = 0;
 let shouldDrawDot = true;
 let currentDistance = 0;
 let referencePosition = null;
-let positionHistory = [];
+let lastHeading = null;
 
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
@@ -22,6 +22,7 @@ const codeToAddress = {
   'test3': "11 rue Saint Paul, 75004 Paris, France"
 };
 
+// Affiche le triangle rouge au centre
 function drawTriangle() {
   const size = 10;
   ctx.fillStyle = 'red';
@@ -33,6 +34,7 @@ function drawTriangle() {
   ctx.fill();
 }
 
+// Affiche la boule jaune à un angle relatif
 function drawDotAtRelativeAngle(angle) {
   let radiusFactor = 1;
   if (currentDistance >= 500) radiusFactor = 1;
@@ -58,6 +60,7 @@ function drawDotAtRelativeAngle(angle) {
   ctx.fill();
 }
 
+// Calcule la distance entre deux coordonnées
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
   const φ1 = lat1 * Math.PI / 180;
@@ -70,57 +73,50 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return Math.round(R * c);
 }
 
-function angleBetweenVectors(v1, v2) {
-  const norm1 = Math.sqrt(v1.x ** 2 + v1.y ** 2);
-  const norm2 = Math.sqrt(v2.x ** 2 + v2.y ** 2);
-  const dot = (v1.x * v2.x + v1.y * v2.y) / (norm1 * norm2);
-  const cross = (v1.x * v2.y - v1.y * v2.x) / (norm1 * norm2);
-  const angle = Math.atan2(cross, dot) * 180 / Math.PI;
-  return (angle + 360) % 360;
+// Calcule le cap (angle en degrés) entre deux points GPS
+function calculateBearing(lat1, lon1, lat2, lon2) {
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) -
+            Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  const θ = Math.atan2(y, x);
+  return (θ * 180 / Math.PI + 360) % 360;
 }
 
+// Gère la mise à jour de position
 function handlePosition(position) {
-  if (!destination) return;
-
   const { latitude, longitude, accuracy } = position.coords;
-  if (accuracy > 50) return;
+  if (accuracy > 50 || !destination) return;
 
-  positionHistory.push({ latitude, longitude });
-  if (positionHistory.length > 3) positionHistory.shift();
-
-  const avgLat = positionHistory.reduce((sum, p) => sum + p.latitude, 0) / positionHistory.length;
-  const avgLon = positionHistory.reduce((sum, p) => sum + p.longitude, 0) / positionHistory.length;
-
-  const current = { latitude: avgLat, longitude: avgLon };
-
-  if (!referencePosition) {
-    referencePosition = current;
-    return;
-  }
-
-  const moved = calculateDistance(referencePosition.latitude, referencePosition.longitude, current.latitude, current.longitude);
-  if (moved >= 10 && accuracy <= 20) {
-    const avgLatMid = (current.latitude + referencePosition.latitude) / 2 * Math.PI / 180;
-
-    const moveVector = {
-      x: -(current.longitude - referencePosition.longitude) * Math.cos(avgLatMid),  // ✅ Inversion ici
-      y: current.latitude - referencePosition.latitude
-    };
-
-    const avgLat2 = (current.latitude + destination.latitude) / 2 * Math.PI / 180;
-    const directionVector = {
-      x: (destination.longitude - current.longitude) * Math.cos(avgLat2),
-      y: destination.latitude - current.latitude
-    };
-
-    dotRelativeAngle = angleBetweenVectors(moveVector, directionVector);
-    referencePosition = current;
-  }
-
-  currentDistance = calculateDistance(current.latitude, current.longitude, destination.latitude, destination.longitude);
+  currentDistance = calculateDistance(latitude, longitude, destination.latitude, destination.longitude);
   distanceDisplay.textContent = `Distance restante : ${currentDistance} m — Précision GPS : ${Math.round(accuracy)} m`;
+
+  if (referencePosition) {
+    const moved = calculateDistance(referencePosition.latitude, referencePosition.longitude, latitude, longitude);
+    if (moved >= 10) {
+      // Cap de déplacement
+      const heading = calculateBearing(referencePosition.latitude, referencePosition.longitude, latitude, longitude);
+      lastHeading = heading;
+      referencePosition = { latitude, longitude };
+    }
+  } else {
+    referencePosition = { latitude, longitude };
+  }
+
+  // Cap vers la cible
+  const bearingToTarget = calculateBearing(latitude, longitude, destination.latitude, destination.longitude);
+
+  // Angle relatif (entre direction actuelle et destination)
+  if (lastHeading !== null) {
+    let relativeAngle = (bearingToTarget - lastHeading + 360) % 360;
+    dotRelativeAngle = relativeAngle;
+  }
 }
 
+// Animation principale
 function animateRadar() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawTriangle();
@@ -130,6 +126,7 @@ function animateRadar() {
   requestAnimationFrame(animateRadar);
 }
 
+// Interface
 scanButton.addEventListener('click', () => {
   codeForm.style.display = 'block';
 });
@@ -152,6 +149,7 @@ validateButton.addEventListener('click', () => {
       const [lon, lat] = data.features[0].geometry.coordinates;
       destination = { latitude: lat, longitude: lon };
       referencePosition = null;
+      lastHeading = null;
     })
     .catch(err => {
       alert("Erreur lors de la récupération de l'adresse.");
