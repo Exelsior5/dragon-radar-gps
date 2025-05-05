@@ -37,16 +37,21 @@ function drawTriangle() {
 // Affiche la boule jaune à un angle relatif
 function drawDotAtRelativeAngle(angle) {
   let radiusFactor = 1;
-  if (currentDistance >= 500) radiusFactor = 1;
-  else if (currentDistance >= 400) radiusFactor = 0.9;
-  else if (currentDistance >= 300) radiusFactor = 0.8;
-  else if (currentDistance >= 200) radiusFactor = 0.7;
-  else if (currentDistance >= 100) radiusFactor = 0.6;
-  else if (currentDistance >= 80) radiusFactor = 0.5;
-  else if (currentDistance >= 60) radiusFactor = 0.4;
-  else if (currentDistance >= 40) radiusFactor = 0.3;
-  else if (currentDistance >= 20) radiusFactor = 0.2;
-  else if (currentDistance > 7) radiusFactor = 0.1;
+  if (currentDistance >= 500) radiusFactor = 1.00;
+  else if (currentDistance >= 450) radiusFactor = 0.95;
+  else if (currentDistance >= 400) radiusFactor = 0.90;
+  else if (currentDistance >= 350) radiusFactor = 0.85;
+  else if (currentDistance >= 300) radiusFactor = 0.80;
+  else if (currentDistance >= 250) radiusFactor = 0.75;
+  else if (currentDistance >= 200) radiusFactor = 0.70;
+  else if (currentDistance >= 150) radiusFactor = 0.65;
+  else if (currentDistance >= 100) radiusFactor = 0.60;
+  else if (currentDistance >= 80)  radiusFactor = 0.50;
+  else if (currentDistance >= 60)  radiusFactor = 0.40;
+  else if (currentDistance >= 40)  radiusFactor = 0.30;
+  else if (currentDistance >= 20)  radiusFactor = 0.20;
+  else if (currentDistance >= 10)  radiusFactor = 0.15;
+  else if (currentDistance >= 2)   radiusFactor = 0.08;
   else radiusFactor = 0;
 
   const radius = (canvas.width / 2 - 20) * radiusFactor;
