@@ -97,7 +97,7 @@ function handlePosition(position) {
   if (accuracy > 50 || !destination) return;
 
   currentDistance = calculateDistance(latitude, longitude, destination.latitude, destination.longitude);
-  distanceDisplay.textContent = `Distance restante : ${currentDistance} m — Précision GPS : ${Math.round(accuracy)} m`;
+  //distanceDisplay.textContent = `Distance restante : ${currentDistance} m — Précision GPS : ${Math.round(accuracy)} m`;
 
   if (referencePosition) {
     const moved = calculateDistance(referencePosition.latitude, referencePosition.longitude, latitude, longitude);
