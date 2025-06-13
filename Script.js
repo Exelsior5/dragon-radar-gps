@@ -18,7 +18,7 @@ const centerY = canvas.height / 2;
 
 const codeToAddress = {
   'TLIJK': "21 avenue d'Italie, 75013 Paris, France",
-  'DREIT': "8 rue du Chemin Blanc, 91160 Champlan, France",
+  'dreit': "8 rue du Chemin Blanc, 91160 Champlan, France",
   'HFLHL': "44 rue des Boulangers, 75005 Paris, France",
   'FTILT': "11 rue Saint Paul, 75004 Paris, France",
   'LEFTT': "79 rue de Patay, 75013 Paris, France",
