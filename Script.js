@@ -17,12 +17,12 @@ const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 
 const codeToAddress = {
-  'TLIJK': "21 avenue d'Italie, 75013 Paris, France",
+  'tlijk': "21 avenue d'Italie, 75013 Paris, France",
   'dreit': "8 rue du Chemin Blanc, 91160 Champlan, France",
-  'HFLHL': "44 rue des Boulangers, 75005 Paris, France",
-  'FTILT': "11 rue Saint Paul, 75004 Paris, France",
-  'LEFTT': "79 rue de Patay, 75013 Paris, France",
-  'EPFHB': "23 Sentier Tissebarbe, 94400 Vitry-sur-Seine, France"
+  'hflhl': "44 rue des Boulangers, 75005 Paris, France",
+  'ftilt': "11 rue Saint Paul, 75004 Paris, France",
+  'leftt': "79 rue de Patay, 75013 Paris, France",
+  'epfhb': "23 Sentier Tissebarbe, 94400 Vitry-sur-Seine, France"
 };
 
 // Affiche le triangle rouge au centre
